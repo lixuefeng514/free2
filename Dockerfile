@@ -1,37 +1,32 @@
-FROM debian
+FROM ubuntu:20.04
 
-RUN apt update
+# 安装需要的软件包并指定版本
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  qemu-kvm=1.0.0-2ubuntu2.9 \
+  firefox-esr=68.11.0esr-1~deb10u1 \
+  xfce4=4.12.3 \
+  tightvncserver=1.3.10-1build1 \
+  wget=1.20.1-1.1ubuntu2
 
-RUN DEBIAN_FRONTEND=noninteractive apt install qemu-kvm zenhei xz-utils dbus-x11 curl firefox-esr gnome-system-monitor mate-system-monitor git xfce4 xfce4-terminal tightvncserver wget -y
+# 安装 noVNC
+RUN wget -O novnc.tar.gz https://github.com/novnc/noVNC/archive/refs/tags/v1.2.0.tar.gz \
+  && tar -xzf novnc.tar.gz -C /opt
 
-RUN wget https://github.com/novnc/noVNC/archive/refs/tags/v1.2.0.tar.gz
+# 安装 Proot 
+RUN curl -fsSL -o proot.deb https://proot.gitlab.io/proot/bin/proot_7.2.1-13_amd64.deb && \
+  dpkg -i proot.deb
 
-RUN curl -LO https://proot.gitlab.io/proot/bin/proot
+# 生成随机密码
+RUN echo '235623' > /tmp/vncpass
 
-RUN chmod 755 proot
+# 配置 VNC 服务
+RUN mkdir ~/.vnc \
+  && vncpasswd -f /tmp/vncpass > ~/.vnc/passwd \
+  && chmod 600 ~/.vnc/passwd
 
-RUN mv proot /bin
+# 拷贝启动脚本
+COPY start.sh /
+RUN chmod +x /start.sh  
 
-RUN tar -xvf v1.2.0.tar.gz
-
-RUN mkdir $HOME/.vnc
-
-RUN echo '235623' | vncpasswd -f > $HOME/.vnc/passwd
-
-RUN chmod 600 $HOME/.vnc/passwd
-
-RUN echo 'whoami ' >>/luo.sh
-
-RUN echo 'cd ' >>/luo.sh
-
-RUN echo "su -l -c 'vncserver :2000 -geometry 1280x800' " >>/luo.sh
-
-RUN echo 'cd /noVNC-1.2.0' >>/luo.sh
-
-RUN echo './utils/launch.sh --vnc localhost:7900 --listen 8900 ' >>/luo.sh
-
-RUN chmod 755 /luo.sh
-
-EXPOSE 8900
-
-CMD /luo.sh 
+EXPOSE 6080
+CMD ["/start.sh"]
