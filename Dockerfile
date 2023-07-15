@@ -1,13 +1,13 @@
 # 指定基础镜像
 FROM ubuntu:20.04
 
-# 更新索引并安装需要的软件包
+# 安装所需软件包 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  qemu-kvm=5.0.0-10-generic \
-  firefox-esr=68.11.0esr-1~deb9u1 \
-  xfce4=4.12.3 \
-  tightvncserver=1.11.0-1 \
-  wget=1.20.3-1ubuntu1
+    qemu-kvm=5.0.0-10ubuntu1 \
+    firefox-esr=68.11.0esr-1~deb10u1 \
+    xfce4=4.12.3 \
+    tightvncserver=1.11.0-1build1 \
+    wget=1.20.3-1ubuntu1
 
 # 安装 noVNC
 RUN wget https://github.com/novnc/noVNC/archive/v1.2.0.tar.gz -O novnc.tar.gz \
